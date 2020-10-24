@@ -1663,22 +1663,22 @@ pub fn parseFree(comptime T: type, value: T, options: ParseOptions) void {
 // struct field matches what we're expecting.
 fn validateComptimeStructField(comptime T: type, field: std.builtin.TypeInfo.StructField, value: T, options: ParseOptions) !void {
     if (field.default_value) |default| {
-        switch (@typeInfo(field.field_type)) {
-          .Bool, .Int, .Float => if (value != default) return error.ParsedValueNotDefault,
-          .Pointer => |pointerInfo| {
-            switch (@typeInfo(pointerInfo.child)) {
-              .Bool, .Int, .Float => if (!mem.eql(pointerInfo.child, value, default)) return error.ParsedValueNotDefault,
-              else => {},
-            }
-          },
-          .Array => |arrayInfo| if (!mem.eql(arrayInfo.child, &value, &default)) return error.ParsedValueNotDefault,
-          .Struct => |structInfo| {
-            inline for (structInfo.fields) |structField| {
-              try validateComptimeStructField(structField.field_type, structField, @field(value, structField.name), options);
-            }
-          },
-          else => {},
-        }
+      switch (@typeInfo(field.field_type)) {
+        .Bool, .Int, .Float => if (value != default) return error.ParsedValueNotDefault,
+        .Pointer => |pointerInfo| {
+          switch (@typeInfo(pointerInfo.child)) {
+            .Bool, .Int, .Float => if (!mem.eql(pointerInfo.child, value, default)) return error.ParsedValueNotDefault,
+            else => {},
+          }
+        },
+        .Array => |arrayInfo| if (!mem.eql(arrayInfo.child, &value, &default)) return error.ParsedValueNotDefault,
+        .Struct => |structInfo| {
+          inline for (structInfo.fields) |structField| {
+            try validateComptimeStructField(structField.field_type, structField, @field(value, structField.name), options);
+          }
+        },
+        else => {},
+      }
     }
 }
 
