@@ -1665,7 +1665,12 @@ fn validateComptimeStructField(comptime T: type, field: std.builtin.TypeInfo.Str
     if (field.default_value) |default| {
         switch (@typeInfo(field.field_type)) {
           .Bool, .Int, .Float => if (value != default) return error.ParsedValueNotDefault,
-          .Pointer => |pointerInfo| if (!mem.eql(pointerInfo.child, value, default)) return error.ParsedValueNotDefault,
+          .Pointer => |pointerInfo| {
+            switch (@typeInfo(pointerInfo.child)) {
+              .Bool, .Int, .Float => if (!mem.eql(pointerInfo.child, value, default)) return error.ParsedValueNotDefault,
+              else => {},
+            }
+          },
           .Array => |arrayInfo| if (!mem.eql(arrayInfo.child, &value, &default)) return error.ParsedValueNotDefault,
           .Struct => |structInfo| {
             inline for (structInfo.fields) |structField| {
